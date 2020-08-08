@@ -1,8 +1,8 @@
-CREATE DATABASE giving_assistant;
+CREATE DATABASE IF NOT EXISTS giving_assistant;
 
 USE giving_assistant;
 
-CREATE TABLE Categories (
+CREATE TABLE IF NOT EXISTS Categories (
     `id` char(36) NOT NULL,
     `parent_id` char(36) DEFAULT NULL,
     `name` varchar(100) NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE Categories (
     KEY `categories_parent_id_idx` (`parent_id`)
 );
 
-CREATE TABLE Merchants (
+CREATE TABLE IF NOT EXISTS Merchants (
     `id` char(36) NOT NULL,
     `category_id` char(36) NOT NULL,
     `name` varchar(100) NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE Merchants (
     KEY `merchants_created_at_idx` (`created_at`)
 );
 
-CREATE TABLE MerchantLogos (
+CREATE TABLE IF NOT EXISTS MerchantLogos (
     `merchant_id` CHAR(36) NOT NULL,
     `type` enum('0', '1', '2') DEFAULT '0' COMMENT '0= For header, 1= For mobile, 2= For mailing',
     `url` text DEFAULT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE MerchantLogos (
     KEY `merchant_logos_created_at_idx` (`merchant_id`)
 );
 
-CREATE TABLE MerchantShippingDetails (
+CREATE TABLE IF NOT EXISTS MerchantShippingDetails (
     `merchant_id` char(36) NOT NULL,
     `content` text NOT NULL,
     `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -38,7 +38,7 @@ CREATE TABLE MerchantShippingDetails (
     KEY `merchant_shipping_details_created_at_idx` (`created_at`)
 );
 
-CREATE TABLE MerchantVisits (
+CREATE TABLE IF NOT EXISTS MerchantVisits (
     `merchant_id` char(36) NOT NULL,
     `user_id` char(36) NOT NULL,
     `track_id` text NOT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE MerchantVisits (
     KEY `merchant_visits_created_at_idx` (`created_at`)
 );
 
-CREATE TABLE Campaigns (
+CREATE TABLE IF NOT EXISTS Campaigns (
     `id` char(36) NOT NULL,
     `merchant_id` char(36) NOT NULL,
     `name` varchar(100) NOT NULL,
@@ -62,7 +62,7 @@ CREATE TABLE Campaigns (
     KEY `campaigns_date_end_idx` (`date_end`)
 );
 
-CREATE TABLE CashBackRates (
+CREATE TABLE IF NOT EXISTS CashBackRates (
     `merchant_id` char(36) NOT NULL,
     `campaign_id` char(36) DEFAULT NULL,
     `rate` int NOT NULL,
