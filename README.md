@@ -1,20 +1,20 @@
 # Giving Assistant BE Challenge
 
-In a first approach to the problem I have came up with a simple design that answers these questions:
+In a first approach to the problem I have came up with a simple design that answer these questions:
 
 1. Which category does this Merchant belong to?
 2. Which are the shipping policies for this Merchant?
 3. Which other Merchants belong to this Category?
 4. What is the current cash back rate for this Merchant?
-5. Is there any on-going campaign for this Merchant?
+5. Is there any ongoing campaign for this Merchant?
 6. Is there a special cash back rate for this Campaign?
-7. Which other Merchants have on-going campaigns at this moment?
+7. Which other Merchants have ongoing campaigns at this moment?
 
 ## First Approach
 
 ![First approach](https://github.com/iturricf/ga-challenge/blob/master/db/first_approach.png?raw=true)
 
-As this design shows, Merchants cash back rates have been normalized into a separate table, this way all cash back rates changes will be registered for a given Merchant, and also rates that apply for Campaigns. Also, it will be possible to schedule cash back rates changes.
+As this design shows, Merchants cash back rates have been normalized into a separate table, this way all cash back rates changes will be registered, and also rates that apply for Campaigns. Also, it will be possible to schedule cash back rates changes.
 
 ## Extended Design
 
@@ -32,11 +32,11 @@ Extra tables could be added, that help answering extra questions when running re
 
 - I have used UUIDs as primary keys as this would allow easier key generation mechanisms in a database sharding scenario.
 - For a real application I would add further analysis for the indexes created on searchable columns. E.g: BTREE vs Hash.
-- Usage of enum in MerchantLogos is an example, this should be changed if possible values for the `type` column will change over time.
+- Usage of `enum` in MerchantLogos table is an example, this should be changed if possible values for the `type` column will change over time.
 
 ## Examples
 
-A db.sql file is provided with the proposed database schema and some example data, which I'll use to run a couple of queries.
+A db.sql file is provided with the proposed database schema and some example data, which I'll use to run some queries.
 
 ### Running Database (Docker required)
 
