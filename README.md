@@ -24,7 +24,7 @@ Further Merchant data disaggregation is possible if it is needed to keep track o
 
 ## Extra tables
 
-![Extra tables](https://github.com/iturricf/ga-challenge/blob/master/db/extended_design.png?raw=true)
+![Extra tables](https://github.com/iturricf/ga-challenge/blob/master/db/extra_tables.png?raw=true)
 
 Extra tables could be added, that help answering extra questions when running reports. For example, number of users that visited and shopped at stores.
 
@@ -33,6 +33,12 @@ Extra tables could be added, that help answering extra questions when running re
 - I have used UUIDs as primary keys as this would allow easier key generation mechanisms in a database sharding scenario.
 - For a real application I would add further analysis for the indexes created on searchable columns. E.g: BTREE vs Hash.
 - Usage of `enum` in MerchantLogos table is an example, this should be changed if possible values for the `type` column will change over time.
+
+### Erratum
+
+Please note ER Diagram relation notation in `MerchantShippingDetails`, `MerchantReturnPolicy`, `MerchantAdditionalInfo` and `MerchantVisits` is wrong, those should be many-to-one relationships.
+
+---
 
 ## Examples
 
