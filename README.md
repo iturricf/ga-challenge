@@ -201,7 +201,7 @@ This service will not work when input data set contains totally unrelated data.
 
 ### Code Example (Docker required)
 
-A code example and its corresponding test were added in `src/DataIntake/SimpleDataResolver` and `tests/SimpleDataResolverTest`. Here is how to use it:
+A code example and its corresponding test were added in [src/DataIntake/SimpleDataResolver](https://github.com/iturricf/ga-challenge/blob/master/src/DataIntake/SimpleDataResolver.php) and [tests/SimpleDataResolverTest](https://github.com/iturricf/ga-challenge/blob/master/tests/SimpleDataResolverTest.php). Here is how to use it:
 
 1. Clone this repository
 
@@ -223,7 +223,6 @@ docker run --rm -it --volume $PWD:/app composer ./vendor/bin/phpunit
 
 - The service could be improved by calculating the similarity map in several passes.
 - Further analysis is required to use this for critical data.
-
 
 ## References
 
