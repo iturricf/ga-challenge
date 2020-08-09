@@ -224,6 +224,40 @@ docker run --rm -it --volume $PWD:/app composer ./vendor/bin/phpunit
 - The service could be improved by calculating the similarity map in several passes.
 - Further analysis is required to use this for critical data.
 
+## Ensuring data is readily and quicky available
+
+According to the data modeling shown above, if a full Merchant record is required a SQL query like the following will be needed:
+
+```sql
+SELECT
+    m.id
+    m.category_id,
+    m.name,
+    m.about
+    (SELECT ml.url FROM MerchantLogos ml WHERE ml.type = '0' AND ml.merchant_id = {MERCHANT_ID}
+    ORDER BY ml.created_at DESC LIMIT 1) as header_logo,
+    (SELECT ml.url FROM MerchantLogos ml WHERE ml.type = '1' AND ml.merchant_id = {MERCHANT_ID}
+    ORDER BY ml.created_at DESC LIMIT 1) as mobile_logo,
+    (SELECT ms.content FROM MerchantShippingDetails ms WHERE ms.merchant_id = {MERCHANT_ID}
+    ORDER BY ms.created_at DESC LIMIT 1) as shipping_details,
+    (SELECT cb.rate FROM CashBackRates cb WHERE cb.merchant_id = {MERCHANT_ID}
+    AND cb.date_start <= NOW() AND (cb.date_end >= NOW() OR cb.date_end IS NULL)
+    ORDER BY cb.created_at DESC LIMIT 1) as cash_back_rate
+FROM Merchants m
+WHERE m.id = {MERCHANT_ID}
+LIMIT 1;
+```
+
+This query could be expensive and if we are looking support high concurrency traffic it would really help having a **cache** layer.
+
+![Cache general](https://github.com/iturricf/ga-challenge/blob/master/db/cache_general.png?raw=true)
+
+For this purpose I would use Redis so that whenever a Merchant record is required it will lookup the Redis cache first and try to hydrate a Merchant object from cached data.
+
+![Cache detail](https://github.com/iturricf/ga-challenge/blob/master/db/cache_detail.png?raw=true)
+
+If no data is associated to the merchant key then the above query will be run against the database server. The resulting data then will be used to hydrate a Merchant object. Also this data will be pushed to the Redis cache for future use.
+
 ## References
 
 [1]. Ali, R.; Siddiqi, M. H.; Ahmed, M. I.; Ali, T.; Hussain, S.; Huh, E.; Kang, B.H.; Lee S. GUDM: Automatic Generation of Unified Datasets for Learning and Reasoning in Healthcare. Sensors 2015, 15, 15772-15798. 
