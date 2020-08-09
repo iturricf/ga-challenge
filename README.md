@@ -1,5 +1,7 @@
 # Giving Assistant BE Challenge
 
+*This repository contains code examples, please clone this repository in order to use them.*
+
 In a first approach to the problem I have came up with a simple design that answer these questions:
 
 1. Which category does this Merchant belong to?
@@ -46,25 +48,29 @@ A db.sql file is provided with the proposed database schema and some example dat
 
 ### Running Database (Docker required)
 
-1. Initialize a MySQL container
+1. Clone this repository
+
+2. Go to the recently created repository root directory
+
+3. Initialize a MySQL container
 
 ```bash
 docker run --name ga_mysql_test -e MYSQL_ROOT_PASSWORD=password -d mysql:5.7
 ```
 
-2. Load DB Schema
+4. Load DB Schema
 
 ```bash
 docker exec -i ga_mysql_test sh -c 'exec mysql -u root -p"password"' < db/db.sql
 ```
 
-3. Load example data
+5. Load example data
 
 ```bash
 docker exec -i ga_mysql_test sh -c 'exec mysql -u root -p"password"' < db/example_data.sql
 ```
 
-4. Connect to MySQL DB and run example queries:
+6. Connect to MySQL DB and run example queries:
 
 ```bash
 docker exec -it ga_mysql_test mysql -u root -p"password" giving_assistant
@@ -147,7 +153,7 @@ AND (c.date_end >= NOW() OR c.date_end IS NULL);
 
 # Some additional thoughts
 
-### Several data sources providing similar information
+## Several data sources providing similar information
 
 There are different approaches for this issue, I can combine a couple and create some sort of `Data Intake Engine` that process different data sources.
 
@@ -180,3 +186,40 @@ Having duplicate data increase redundancy which might be a sign that we are faci
 Also using a `similar text` approach by calculating the Levenshtein distance between two strings we could arrive to a similar solution.
 
 ### Receiving five different titles for the Merchant
+
+In the case of receiving 5 different store names for the Merchant I created a simple service that will try to sort out this issue.
+
+Considering the 5 store names as the input dataset I created the `SimpleDataResolver` service that analyze duplicate data and resolves the right value as the one that most repeats in the input dataset.
+
+For a scenario where there is no duplicate data then I use a `similar text` search approach to guess the correct value.
+
+This algorithm uses the Levenshtein distance, then by comparing the dataset values to each other and measuring the `distance` between them I create a similarity map. This maps each value in the input dataset to the most similar value found.
+
+At the end, I take the similarity map as the new input dataset and repeat the duplicate data processing as described above.
+
+This service will not work when input data set contains totally unrelated data.
+
+### Code Example (Docker required)
+
+A code example and its corresponding test were added in `src/DataIntake/SimpleDataResolver` and `tests/SimpleDataResolverTest`. Here is how to use it:
+
+1. Clone this repository
+
+2. Go to the recently created repository root directory
+
+3. Run composer install
+
+```bash
+docker run --rm -it --volume $PWD:/app composer install
+```
+
+4. Run phpunit
+
+```bash
+docker run --rm -it --volume $PWD:/app composer ./vendor/bin/phpunit
+```
+
+### Some considerations
+
+- The service could be improved by calculating the similarity map in several passes.
+- Further analysis is required to use this for critical data.
