@@ -142,3 +142,41 @@ INNER JOIN Campaigns c ON m.id = c.merchant_id
 WHERE c.date_start <= NOW()
 AND (c.date_end >= NOW() OR c.date_end IS NULL);
 ```
+
+---
+
+# Some additional thoughts
+
+### Several data sources providing similar information
+
+There are different approaches for this issue, I can combine a couple and create some sort of `Data Intake Engine` that process different data sources.
+
+A first step could be to identify the criticality of the data provided and assign a priority to each data source[1], this could be understood as a `trustworthiness index`, so that given a collection of data sources:
+
+```
+DS = {ds1, ds2, ..., dsn}
+```
+
+And a defined priority set corresponding to each data source:
+
+```
+P = {p1, p2, ..., pn}
+```
+
+in regards of certain attribute in the datasets, for instance: `cash_back_rate`.
+
+Then retrieving the cash back rate from `DS` will be done as follow:
+
+```
+cash_back_rate = loadData('cash_back_rate', DS, P, maxPriority)
+```
+
+This will retrieve data from dataset whose has a higher priority value.
+
+The previous approach could be an overkill in certain situations and for those cases I still could use `duplicate` and `similar text` calculation algorithms.
+
+Having duplicate data increase redundancy which might be a sign that we are facing with correct data. So by creating an index on duplicate data coming from several data sources we could arrive the data that has a higher probability to be correct.
+
+Also using a `similar text` approach by calculating the Levenshtein distance between two strings we could arrive to a similar solution.
+
+### Receiving five different titles for the Merchant
