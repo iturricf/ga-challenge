@@ -223,3 +223,8 @@ docker run --rm -it --volume $PWD:/app composer ./vendor/bin/phpunit
 
 - The service could be improved by calculating the similarity map in several passes.
 - Further analysis is required to use this for critical data.
+
+
+## References
+
+[1]. Ali, R.; Siddiqi, M. H.; Ahmed, M. I.; Ali, T.; Hussain, S.; Huh, E.; Kang, B.H.; Lee S. GUDM: Automatic Generation of Unified Datasets for Learning and Reasoning in Healthcare. Sensors 2015, 15, 15772-15798. 
