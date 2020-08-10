@@ -230,10 +230,10 @@ According to the data modeling shown above, if a full Merchant record is require
 
 ```sql
 SELECT
-    m.id
+    m.id,
     m.category_id,
     m.name,
-    m.about
+    m.about,
     (SELECT ml.url FROM MerchantLogos ml WHERE ml.type = '0' AND ml.merchant_id = {MERCHANT_ID}
     ORDER BY ml.created_at DESC LIMIT 1) as header_logo,
     (SELECT ml.url FROM MerchantLogos ml WHERE ml.type = '1' AND ml.merchant_id = {MERCHANT_ID}
@@ -258,6 +258,46 @@ For this purpose I would use Redis so that whenever a Merchant record is require
 
 If no data is associated to the merchant key then the above query will be run against the database server. The resulting data then will be used to hydrate a Merchant object. Also this data will be pushed to the Redis cache for future use.
 
+### Notes
+
+With this design will also be possible to write data to cache at the same time we write data to the datastore so we will keep consistency.
+
+For data that change over time it is possible to set expiration time in redis, so for example if a CashBackRate record has a `date_end` value set, a timeout value could be calculated and added to Redis. This way Redis will automatically invalidate the cache value when it gets old.
+
+## Key business data changing over time
+
+If we take a look at the proposed design we could see that Merchant's cash back rates is handled in a separate table.
+
+Every time the cash back rate for a given Merchant changes it will not overwrite existing data, a new record containing the up-to-date rate data will be added instead, all of this with a timestamp of the moment in which the change ocurred. This way we can ask the latest cash back rate at all times, and at the same time we keep historical changes.
+
+In addition, by having the `date_start` and `date_end` columns, cash back rates changes could be scheduled so that they will apply automatically in the future.
+
+### Another approach
+
+The obvious design solution for this project was to have a normalized schema in a relational database. It has many advantages in terms of data integrity and consistency. But as schema evolves the queries become more and more complex and need to join many tables together in order to satisfy them.
+
+So the key is to decouple data persistence from the domain model to avoid object-relational impedance mismatch[2].
+
+### Event sourcing approach
+
+Rather than saving mutable state in database and update it in place, we save the succession of events that brought us to the current state.
+
+By doing this we can always derive current state by replaying all the events from the beginning of time.
+
+When using this approach we are not overwriting the data, but merely accumulating facts about what happended in the domain.
+
+This design could be implemented with Apache Kafka in combination with Kafka Streams.
+
+Kafka is a distributed append-only log and can also be used as a pub-sub or queue. By using this tool we can turn our application's use cases into commands that needs to be processed. These commands will generate events and publish them into Kafka `topics`.
+
+The events then are consumed by different event handlers. One of those handlers could write the events back to a normalized relational database that we can query anytime.
+
+Since multiple handlers can listen to the same event, other handlers could send a response to a pub-sub `topic` to which the user browser could be connected through websockets.
+
+Kafka Streams is a library that allows to do stream processing on top of Kafka. Streams are "data in flight", a continously updating dataset which is ordered and replayable. Kafka Streams also allows the possibilty to see **streams** as **tables**. A table in Kafka Streams is a collection of evolving facts and can be seen as a point-in-time view of aggregated data.
+
 ## References
 
-[1]. Ali, R.; Siddiqi, M. H.; Ahmed, M. I.; Ali, T.; Hussain, S.; Huh, E.; Kang, B.H.; Lee S. GUDM: Automatic Generation of Unified Datasets for Learning and Reasoning in Healthcare. Sensors 2015, 15, 15772-15798. 
+[1]. Ali, R.; Siddiqi, M. H.; Ahmed, M. I.; Ali, T.; Hussain, S.; Huh, E.; Kang, B.H.; Lee S. GUDM: Automatic Generation of Unified Datasets for Learning and Reasoning in Healthcare. Sensors 2015, 15, 15772-15798.
+
+[2]. Ireland, J.C. Object-relational impedance mismatch : a framework based approach. Open University 2011.
